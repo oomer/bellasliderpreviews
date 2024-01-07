@@ -3,9 +3,13 @@
 >Work in progress, ALPHA software
 
 **bellasliderpreviews.sh** is a bash script 
-to generate scrubbable jpeg previews of Bella node attributes. It runs natively on Linux/MacOS and on Windows using git-bash from https://git-scm.org
+to generate scrubbable jpeg previews of Bella node attributes. It runs natively on Linux/MacOS and on Windows using git-bash from https://git-scm.com
 
 > Currently only some random Material nodes attribs are available. More to come...
+
+Here is a sample
+http://besp.oomer.org/23.6.0/material/directory.html
+
 
 To generate html slider previews
 - put a Bella scene file (.bsz, .bsx, or .bsa) in the same dir as **bellapreviewslider.sh**
@@ -17,12 +21,12 @@ To generate html slider previews
     - **23.6.0** dir
         - **material** dir
             - **shaderball.bsz.carPaint.flakes.size** dir 
-- double click on **index.html** to see BeSP (aka Bella Slider Previews)
+- double click on **directory.html** to see BeSP (aka Bella Slider Previews)
 
 **Thanks to Jeremy Hill of Diffuse Logic for javascript code to scrub jpegs.**
 
 Run these in **bash** to set global render settings. Add your BELLA_LICENSE_TEXT to remove watermark.
 ```sh
-export BELLA_PARSE_FRAGMENT="nncamera.resolution=vec2(256 256);nncamera.region=null;nnbeautyPass.targetNoise=10u;nnbeautyPass.saveImage=0;nnbeautyPass.outputExt=\".jpg\";"
+export BELLA_PARSE_FRAGMENT="nncamera.resolution=vec2(320 320);nncamera.region=null;nnbeautyPass.targetNoise=7u;nnbeautyPass.saveImage=0;nnbeautyPass.outputExt=\".jpg\";"
 export BELLA_VERSION="23.6.0"
 ```
