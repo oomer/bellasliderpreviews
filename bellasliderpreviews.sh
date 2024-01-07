@@ -157,8 +157,8 @@ if [ ${idle} == "1" ]; then
 				insert1=""
 				#cp "${parent_dir}/${prefix_anim}.bsa" "${save_anim_dir}/${scene}.${prefix_anim}.bsa"
 			fi
-			echo ./bella_cli -i:"${scene}" -on:"bella${padded}" -pf:"${BELLA_PARSE_FRAGMENT}" -pf:"${insert1}" -pf:"${attr}=${animated}f;" -pf:"settings.threads=0;"  -od:"${save_html_dir}/" 
-			"${bella_cli_path}" -i:"${scene}" -on:"bella${padded}" -pf:"${BELLA_PARSE_FRAGMENT}" -pf:"${insert1}" -pf:"${attr}=${animated}f;" -pf:"settings.threads=0;"  -od:"${save_html_dir}/" 
+			echo ./bella_cli -i:"${scene}" -on:"bella${padded}" -pf:"${BELLA_PARSE_FRAGMENT}" -pf:"${insert1}" -pf:"${attr}=${animated}f;" -pf:"nnsettings.threads=0;"  -od:"${save_html_dir}/" 
+			"${bella_cli_path}" -i:"${scene}" -on:"bella${padded}" -pf:"${BELLA_PARSE_FRAGMENT}" -pf:"${insert1}" -pf:"${attr}=${animated}f;" -pf:"nnsettings.threads=0;"  -od:"${save_html_dir}/" 
 		done	
 	done
 fi
