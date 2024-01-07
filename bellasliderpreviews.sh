@@ -7,7 +7,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 	bella_cli_path="/Applications/bella_cli.app/Contents/MacOS/bella_cli"
 	os_name="MacOS"
 elif [[ "$OSTYPE" == "msys"* ]]; then
-	bella_cli_path="$PROGRAMFILES/Diffuse Logic/Bella CLI/bella_cli.exe"
+	bella_cli_path="C:/Program Files/Diffuse Logic/Bella CLI/bella_cli.exe"
 	os_name="Windows"
 else
 	os_name=$(awk -F= '$1=="NAME" { print $2 ;}' /etc/os-release)
@@ -19,19 +19,19 @@ else
 		if [ "$platform_id" == "\"platform:el8\"" ] || [ "$platform_id" == "\"platform:el9\"" ]; then
 			sudo dnf -y install mesa-vulkan-drivers
 			sudo dnf -y install mesa-libGL
-			sudo dnf -y install bc
+			#sudo dnf -y install bc
 		#  Debian based
 		else
 			sudo apt -y update
 			sudo apt -y install mesa-vulkan-drivers
 			sudo apt -y install libgl1-mesa-glx
-			sudo apt -y install bc
+			#sudo apt -y install bc
 		fi
 		curl -O https://downloads.bellarender.com/bella_cli-${BELLA_VERSION}.tar.gz
 		tar -xvf bella_cli-${BELLA_VERSION}.tar.gz
 	fi
 fi
-if ! test -f ${bella_cli_path}; then
+if ! test -f "${bella_cli_path}"; then
 	echo "FAIL: ${bella_cli_path} does not exist"
 	exit
 fi
@@ -56,14 +56,11 @@ else
 fi
 echo $scene
 
-xform_nodes=$(${bella_cli_path} -ln:"xform" -i:${scene})
-echo -e "${xform_nodes}hello"
+xform_nodes=$("${bella_cli_path}" -ln:"xform" -i:${scene})
 
 echo -e "\nbellasliderpreview.sh will render using bella_cli to generate scrubbeable previews"
 echo "This supplements the bella docs with visual feedback on how each attribute affects the render"
 node_names_with_spaces="${xform_nodes//,/ }"
-echo "${node_names_with_spaces}good"
-
 
 echo -e "\nSelect a premade set of slider preview animations to render"
 echo "Your scene will locally render 30 frames for each attribute, meaning this will take a long time"
@@ -89,7 +86,7 @@ if [ $node_group = "material" ] || [ $node_group = "all" ]; then
 	fi
 fi
 
-bsz_files=*.bsz
+#bsz_files=*.bsz
 #anim_files=${BELLA_VERSION}/material/*.anim
 template_files=./templates/${node_group}/*.anim
 
@@ -143,7 +140,9 @@ if [ ${idle} == "1" ]; then
 			fi
 
 			padded=$(printf "%04d" $((i)))
-			animated=$(echo "scale=5; ((${anim1end}-(${anim1start}))*($((i-1))/$((frames-1))))+${anim1start}" | bc)
+			#animated=$(echo "scale=5; ((${anim1end}-(${anim1start}))*($((i-1))/$((frames-1))))+${anim1start}" | bc)
+			animated=$(awk "BEGIN {print (($anim1end-$anim1start)*(($i-1)/($frames-1)))+$anim1start}")
+			echo "${animated} ${animated2}"
 			if [ ${animated:0:1} == "." ]; then
 				animated="0${animated}"
 			elif [ ${animated:0:2} == "-." ]; then
@@ -159,7 +158,7 @@ if [ ${idle} == "1" ]; then
 				#cp "${parent_dir}/${prefix_anim}.bsa" "${save_anim_dir}/${scene}.${prefix_anim}.bsa"
 			fi
 			echo ./bella_cli -i:"${scene}" -on:"bella${padded}" -pf:"${BELLA_PARSE_FRAGMENT}" -pf:"${insert1}" -pf:"${attr}=${animated}f;" -pf:"settings.threads=0;"  -od:"${save_html_dir}/" 
-			./bella_cli -i:"${scene}" -on:"bella${padded}" -pf:"${BELLA_PARSE_FRAGMENT}" -pf:"${insert1}" -pf:"${attr}=${animated}f;" -pf:"settings.threads=0;"  -od:"${save_html_dir}/" 
+			"${bella_cli_path}" -i:"${scene}" -on:"bella${padded}" -pf:"${BELLA_PARSE_FRAGMENT}" -pf:"${insert1}" -pf:"${attr}=${animated}f;" -pf:"settings.threads=0;"  -od:"${save_html_dir}/" 
 		done	
 	done
 fi
