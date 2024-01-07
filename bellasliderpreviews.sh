@@ -101,6 +101,9 @@ else
 		idle="0"
 	fi
 fi
+save_node_dir="./${BELLA_VERSION}/${node_group}"
+cat templates_html/predirectory.html > ${save_node_dir}/directory.html
+
 if [ ${idle} == "1" ]; then
 	for each in $template_files
 	do
@@ -115,12 +118,15 @@ if [ ${idle} == "1" ]; then
 		save_anim_dir="./${BELLA_VERSION}/${node_group}"
 		#echo $save_html_dir
 		mkdir -p ${save_html_dir}
-    	echo "bellaType=\"$(sed '4!d' ${each})\";" > ${save_html_dir}/bella.js
-    	echo "bellaNode=\"$(sed '5!d' ${each})\";" >> ${save_html_dir}/bella.js
-    	echo "bellaAttribute=\"$(sed '6!d' ${each})\";" >> ${save_html_dir}/bella.js
+    	bellaType=$(sed '4!d' ${each})
+    	bellaNode=$(sed '5!d' ${each}) 
+    	bellaAttribute=$(sed '6!d' ${each})
+    	echo "bellaType=\"${bellaType}\";" > ${save_html_dir}/bella.js
+    	echo "bellaNode=\"${bellaNode}\";" >> ${save_html_dir}/bella.js
+    	echo "bellaAttribute=\"${bellaAttribute}\";" >> ${save_html_dir}/bella.js
 		echo "bellaSteps=[];" >> ${save_html_dir}/bella.js
 		cp template.html ${save_html_dir}/index.html
-
+		echo "<A href=./${scene}.${prefix_anim}/index.html>${bellaType} &nbsp; > &nbsp; ${scene} &nbsp; > &nbsp; ${bellaNode} &nbsp; > &nbsp; ${bellaAttribute}</a><br>" >> ${save_node_dir}/directory.html
 		#echo "Animation Rendering started for: $each"
 
 		anim1startline=$(sed '1!d' ${each})
@@ -148,7 +154,7 @@ if [ ${idle} == "1" ]; then
 			elif [ ${animated:0:2} == "-." ]; then
 				animated="-0${animated:1}"
 			fi
-			echo "bellaSteps[$((i))]=\"${animated}f;\"" >> ${save_html_dir}/bella.js
+			echo "bellaSteps[$((i))]=\"$(printf %.3f ${animated})\";" >> ${save_html_dir}/bella.js
 			cp $each "${save_anim_dir}/${scene}.${prefix_anim}.anim"
 			if test -f  "${parent_dir}/${prefix_anim}.bsa"; then 
 				sed s/BeSPREPLACEME/${node_name}/g "${parent_dir}/${prefix_anim}.bsa" > "${save_anim_dir}/${scene}.${prefix_anim}.bsa"
@@ -161,4 +167,12 @@ if [ ${idle} == "1" ]; then
 			"${bella_cli_path}" -i:"${scene}" -on:"bella${padded}" -pf:"${BELLA_PARSE_FRAGMENT}" -pf:"${insert1}" -pf:"${attr}=${animated}f;" -pf:"nnsettings.threads=0;"  -od:"${save_html_dir}/" 
 		done	
 	done
+fi
+
+cat templates_html/postdirectory.html >> ${save_node_dir}/directory.html
+
+if [[ "$OSTYPE" == "darwin"* ]]; then
+	open ./${BELLA_VERSION}/material/directory.html
+elif [[ "$OSTYPE" == "msys"* ]]; then
+	microsoftedge.exe "${PWD}/${BELLA_VERSION}/material/directory.html"
 fi
