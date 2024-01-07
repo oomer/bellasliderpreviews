@@ -125,7 +125,7 @@ if [ ${idle} == "1" ]; then
     	echo "bellaNode=\"${bellaNode}\";" >> ${save_html_dir}/bella.js
     	echo "bellaAttribute=\"${bellaAttribute}\";" >> ${save_html_dir}/bella.js
 		echo "bellaSteps=[];" >> ${save_html_dir}/bella.js
-		cp template.html ${save_html_dir}/index.html
+		cp ./templates_html/template.html ${save_html_dir}/index.html
 		echo "<A href=./${scene}.${prefix_anim}/index.html>${bellaType} &nbsp; > &nbsp; ${scene} &nbsp; > &nbsp; ${bellaNode} &nbsp; > &nbsp; ${bellaAttribute}</a><br>" >> ${save_node_dir}/directory.html
 		#echo "Animation Rendering started for: $each"
 
