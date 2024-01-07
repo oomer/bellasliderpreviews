@@ -21,7 +21,8 @@ To generate html slider previews
     - **23.6.0** dir
         - **material** dir
             - **shaderball.bsz.carPaint.flakes.size** dir 
-- double click on **directory.html** to see BeSP (aka Bella Slider Previews)
+- double click on **index.html** to see BeSP (aka Bella Slider Previews)
+- double click on **directory.html** in the **material** dir to see all available **BeSPs**
 
 **Thanks to Jeremy Hill of Diffuse Logic for javascript code to scrub jpegs.**
 
