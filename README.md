@@ -12,8 +12,8 @@ http://besp.oomer.org/23.6.0/material/directory.html
 
 
 To generate html slider previews
-- put a Bella scene file (.bsz, .bsx, or .bsa) in the same dir as **bellapreviewslider.sh**
-- in bash/zsh run **bash bellapreviewslider.sh**
+- put a Bella scene file (.bsz, .bsx, or .bsa) in the same dir as **bellasliderpreviews.sh**
+- in bash/zsh run **bash bellasliderpreviews.sh**
 - select Bella scenefile
 - select Bella xform node from list
 - will render 30 frames per attribute, this will take a long time
