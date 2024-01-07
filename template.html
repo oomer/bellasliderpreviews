@@ -1,0 +1,264 @@
+<html>
+  <head>
+    <style type='text/css'>
+      body {
+        margin: 0;
+        background: #555;
+        font-family: sans-serif;
+        color: #ddd;
+      }
+      .container {
+        padding: 1em;
+      }
+      .image-panel {
+        padding: 1em;
+        background: #555;
+        border-radius: 0.35em;
+        margin: 1em;
+        display: inline-grid;
+        min-width: max-content;
+      }
+      .select {
+        margin-bottom: 1em;
+        background: #333;
+        color: #ddd;
+        border: none;
+        border-radius: 0.2em;
+        padding: 0.5em 0.75em;
+        font-size: .5em;
+      }
+      .image {
+        margin: auto;
+        background: #222;
+        min-width: 200px;
+        min-height: 200px;
+      }
+      .step {
+        font-size: 1.25em;
+        margin: -1.75em auto auto auto;
+        padding: 0.125em 0.5em;
+        border-radius: 0.2em;
+        background: #0004;
+        color: #fff;
+      }
+      .slider {
+        margin-top: 1.25em;
+      }
+      * {
+        box-sizing: border-box;
+      }   
+      .row {
+      float: top;
+      padding-top: 5px;
+      padding-left: 8px;
+      padding-right: 8px;
+      width: 100%;
+      }
+      .upper {
+        height: 5%;
+      }
+      .lower {
+        height: 95%;
+      }
+      .column:after {
+        content: "";
+        display: table;
+        clear: both;
+      }
+      a {
+      font-size: 14px; color: #f7f2eb; text-decoration: none;
+      }
+      a:active {
+      font-size: 14px; color: #ffffff; text-decoration: none;
+      }
+      a:hover {
+      font-size: 14px; color: #a77d9f; text-decoration: underline;
+      }
+    </style>
+    <script type='text/javascript'>
+    
+      // I guess the bella.js must be a generated file and these could be moved there.
+      //
+      var steps = [];
+      var bella_type = "unknown_type"
+      var bella_node = "unknown_node"
+      var bella_attribute = "unknown_attr"
+      
+      // So, script tags call this with the image prefix they want; we create all the elements,
+      // load the initial image, wire up events, and preload the other images for this prefix.
+      //
+      var createImagePanel = (prefix, firstStep, lastStep) => {
+      
+        // Load the steps array. We expect the .js file to contain an array of step labels, in
+        // an array named for the prefix (e.g. 'var bellaSteps = [];'), which we will use below
+        // to make sure we look up the step label values from the correct array.
+        //
+        var script = document.createElement('script');
+        script.src = prefix + '.js';
+        document.head.appendChild(script);
+
+        script.onerror = () => {
+          
+          var errorText = `File '${prefix}.js' was not found.`;
+          console.error(errorText);
+          
+          var container = document.scripts[document.scripts.length-1].parentNode;
+          var panel = document.createElement('div');
+          container.appendChild(panel);
+          panel.className = 'image-panel error';
+          panel.innerText = errorText;
+        };
+
+        script.onload = () => {
+          
+          var debugPreloading = false;
+          
+          // The step labels for this prefix have been loaded, so we look for them by name.
+          //
+          var stepLabels = () => window[prefix + 'Steps'];
+        
+          // Build an image path given a prefix and index.
+          //
+          var imageFilename = (prefix, idx) => {
+            return prefix+idx.toString().padStart(4, '0')+'.jpg';
+          };
+          
+          // Not really tested but this should handle the preloading.
+          //
+          var preloadImage = (prefix, step) => {
+            var img = document.createElement('img');
+            var preloadNextImage = () => {
+              if (step < lastStep) {
+                preloadImage(prefix, step+1);
+              } else {
+                if (debugPreloading) {
+                  console.log(`Finished preloading prefix '${prefix}' at step ${step}.`);
+                }
+              }
+            };
+            img.onload = () => {
+              if (debugPreloading) {
+                console.log(`Loaded step ${step} for prefix '${prefix}'.`);
+              }
+              preloadNextImage();
+            };
+            img.onerror = () => {
+              console.error(`Failed to load step ${step} for prefix '${prefix}'.`);
+              preloadNextImage();
+            };
+            img.src = imageFilename(prefix, step);
+          };
+          
+          // Now actually create the elements.
+          //
+          var container = document.scripts[document.scripts.length-1].parentNode;
+          var panel = document.createElement('div');
+          container.appendChild(panel);
+          panel.className = 'image-panel';
+          
+          var dropdown = document.createElement('select');
+          panel.appendChild(dropdown);
+          dropdown.className = 'select';
+          dropdown.autocomplete = 'off';
+          
+          for (var i = 0; i < 7; ++i) {
+            if (i == 0) {
+              var option = document.createElement('option');
+              dropdown.appendChild(option);
+              option.value = '';
+              option.selected = '';
+              option.innerText = 'Auto (actual image size)';
+            } else if (i > 2) {
+              var option = document.createElement('option');
+              dropdown.appendChild(option);
+              option.value = i + '00px';
+              option.innerText = i + '00 px';
+            }
+          }
+          
+          var image = document.createElement('img');
+          panel.appendChild(image);
+          image.className = 'image';
+          
+          var step = document.createElement('div');
+          panel.appendChild(step);
+          step.className = 'step';
+          
+          var slider = document.createElement('input');
+          panel.appendChild(slider);
+          slider.className = 'slider';
+          slider.type = 'range';
+          slider.autocomplete = 'off';
+          slider.min = firstStep;
+          slider.max = lastStep;
+          slider.step = '1';
+          slider.value = firstStep;
+          
+          var selectSize = () => {
+            image.style.width = dropdown.value;
+          };
+          
+          var selectImage = () => {
+            step.innerText = stepLabels()[slider.value];
+            image.onerror = () => { image.src = 'missing.png'; }
+            image.src = imageFilename(prefix, slider.value);
+          };
+          
+          // Select new image size & images on events.
+          //
+          dropdown.onchange = () => selectSize();
+          slider.oninput = () => selectImage();
+          
+          // Load the first image for this panel.
+          //
+          selectImage(slider);
+          
+          // Give awhile for each panel to load its first image before preloading the rest.
+          //
+          setTimeout(() => preloadImage(prefix, firstStep+1), 1000);
+        };
+      };
+    function bella_strings() {
+      document.getElementById("bella_type").innerHTML = bellaType;
+      document.getElementById("bella_node").innerHTML = bellaNode;
+      document.getElementById("bella_attribute").innerHTML = bellaAttribute;
+    };
+    </script>
+    <script src='bella.js'></script>
+  </head>
+  <body onload="bella_strings()">
+
+    <div class="column">
+      <div class="row upper" style="background-color:#444;">
+        <a href=../directory.html id="bella_type"></a> &nbsp; > &nbsp;
+        <a href=../directory.html id="bella_node"></a> &nbsp; > &nbsp; <a href=../directory.html id="bella_attribute"></a>  
+
+      </div>
+
+      <div class="row lower" style="background-color:#555;">
+        <div class='container'>
+          
+          <!-- Here is what the panels look like -->
+          
+          <!--div class='image-panel'>
+            <select class='select' autocomplete='off' onchange='selectSize(this)'>
+              <option value='' selected >Auto (actual image size)</option>
+              <option value='400px'>400 px</option>
+              <option value='500px'>500 px</option>
+              <option value='600px'>600 px</option>
+            </select>
+            <img class='image' />
+            <div class='step'></div>
+            <input class='slider' type='range' autocomplete='off' step='1' oninput="selectImage(this)" />
+          </div-->
+          
+          <!-- but we create them like this instead; each would refer to a different image set -->
+          
+          <script type='text/javascript'>createImagePanel('bella', 1, 30);</script>
+          <script type='text/javascript'>createImagePanel('bella', 1, 30);</script>
+          
+        </div>
+      </div> 
+    </div> 
+  </body>
+</html>
