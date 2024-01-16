@@ -1,6 +1,11 @@
-BeSP_carPaint.flakes.size=0.0f;
-BeSP_carPaint.flakes.size=12.0f;
-30
-Material
-carPaint
-flakes.size
+bellaSliderType=real
+bellaSliderStart=0.0
+bellaSliderEnd=12.0
+bellaSliderFrames=30
+bellaSliderNode=besp0
+bellaNodeInsert=carPaint
+bellaNodeType=material
+bellaNode=carPaint
+bellaAttribute=flakes.size
+bellaFragment=besp0.flakes.strength=1.0f;
+

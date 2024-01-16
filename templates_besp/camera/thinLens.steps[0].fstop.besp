@@ -1,0 +1,10 @@
+bellaSliderType=real
+bellaSliderStart=0.2
+bellaSliderEnd=5.2
+bellaSliderFrames=30
+bellaSliderNode=nnlens
+bellaNodeInsert=thinLens
+bellaNodeType=camera
+bellaNode=thinLens
+bellaAttribute=steps[0].fStop
+bellaFragment=nncamera.pinhole=false;

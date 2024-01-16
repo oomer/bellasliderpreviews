@@ -1,6 +1,10 @@
-BeSP_carPaint.scratches.width=0.0f;
-BeSP_carPaint.scratches.width=1.0f;
-30
-Material
-carPaint
-scratches.width
+bellaSliderType=real
+bellaSliderStart=0.0
+bellaSliderEnd=1.0
+bellaSliderFrames=30
+bellaSliderNode=besp0
+bellaNodeInsert=carPaint
+bellaNodeType=material
+bellaNode=carPaint
+bellaAttribute=scratches.width
+bellaFragment=besp0.scratches.depth=1.0f;

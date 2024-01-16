@@ -2,6 +2,11 @@
 
 >Work in progress, ALPHA software
 
+>Note this alpha version needs to run twice:
+>first to generate bespoke .besp files (for debugging)
+>second to render 
+
+
 **bellasliderpreviews.sh** is a bash script 
 to generate scrubbable jpeg previews of Bella node attributes. It runs natively on Linux/MacOS and on Windows using git-bash from https://git-scm.com
 
@@ -15,7 +20,7 @@ To generate html slider previews
 - put a Bella scene file (.bsz, .bsx, or .bsa) in the same dir as **bellasliderpreviews.sh**
 - in bash/zsh run **bash bellasliderpreviews.sh**
 - select Bella scenefile
-- select Bella xform node from list
+- select the scene node to modify ( ie mesh, xform )
 - will render 30 frames per attribute, this will take a long time
 - as an example the htmls and renders will be created in:
     - **23.6.0** dir

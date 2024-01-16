@@ -1,0 +1,16 @@
+bellaSliderType=real
+bellaSliderNode=besp0
+bellaSliderStart=0.0
+bellaSliderEnd=2.0
+bellaSliderFrames=30
+bellaNodeType=geometry
+bellaNode=grass
+bellaAttribute=length
+bellaUnits=cm
+bespSelect=mesh
+bespSelect=xform
+bellaNodeInsert=grass
+bellaNodeInsert=dielectric
+bellaFragment=besp0.baseRadius=0.05f;
+bellaFragment=besp0.density=500000u;
+bellaFragment=besp0.type="round";

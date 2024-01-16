@@ -1,0 +1,19 @@
+bellaSliderType=real
+bellaSliderStart=0
+bellaSliderEnd=10
+bellaSliderFrames=30
+bellaSliderNode=besp0
+bellaNodeInsert=volumetricMaterial
+bellaNodeInsert=box
+bellaNodeType=material
+bellaNode=volumetricMaterial
+bellaAttribute=scatteringDensity
+bellaFragment=xform bespXform;
+bellaFragment=bespXform.children[*]=besp1;
+bellaFragment=besp1.sizeX=5f;
+bellaFragment=besp1.sizeY=5f;
+bellaFragment=besp1.sizeZ=5f;
+bellaFragment=bespXform.material=besp0;
+bellaFragment=__world__.children[*]=bespXform;
+
+

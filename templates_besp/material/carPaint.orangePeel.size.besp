@@ -1,6 +1,10 @@
-BeSP_carPaint.orangePeel.size=0.0f;
-BeSP_carPaint.orangePeel.size=0.30f;
-30
-Material
-carPaint
-orangePeel.size
+bellaSliderType=real
+bellaSliderStart=0.0
+bellaSliderEnd=0.30
+bellaSliderFrames=30
+bellaSliderNode=besp0
+bellaNodeInsert=carPaint
+bellaNodeType=material
+bellaNode=carPaint
+bellaAttribute=orangePeel.size
+bellaFragment=besp0.orangePeel.strength=1.0f;

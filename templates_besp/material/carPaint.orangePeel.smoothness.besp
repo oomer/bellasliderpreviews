@@ -1,6 +1,11 @@
-BeSP_carPaint.orangePeel.smoothness=0.0f;
-BeSP_carPaint.orangePeel.smoothness=1.0f;
-30
-Material
-carPaint
-orangePeel.smoothness
+bellaSliderType=real
+bellaSliderStart=0.0
+bellaSliderEnd=1.0
+bellaSliderFrames=30
+bellaSliderNode=besp0
+bellaNodeInsert=carPaint
+bellaNodeType=material
+bellaNode=carPaint
+bellaAttribute=orangePeel.smoothness
+bellaFragment=besp0.orangePeel.size=0.25f;
+
