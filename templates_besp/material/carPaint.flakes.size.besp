@@ -2,10 +2,10 @@ bellaSliderType=real
 bellaSliderStart=0.0
 bellaSliderEnd=12.0
 bellaSliderFrames=30
-bellaSliderNode=besp0
-bellaNodeInsert=carPaint
+bellaSliderNode=bespNode0
+bespNode=carPaint
 bellaNodeType=material
 bellaNode=carPaint
-bellaAttribute=flakes.size
-bellaFragment=besp0.flakes.strength=1.0f;
+bellaNodeAttribute=flakes.size
+bellaFragment=bespNode0.flakes.strength=1.0f;
 

@@ -2,18 +2,33 @@ bellaSliderType=real
 bellaSliderStart=0
 bellaSliderEnd=10
 bellaSliderFrames=30
-bellaSliderNode=besp0
-bellaNodeInsert=volumetricMaterial
-bellaNodeInsert=box
+bellaSliderNode=bespNode0
+bespNode=volumetricMaterial
+bespNode=box
+bespNode=emitter
+bespNode=sphere
 bellaNodeType=material
 bellaNode=volumetricMaterial
-bellaAttribute=scatteringDensity
+bellaNodeAttribute=scatteringDensity
 bellaFragment=xform bespXform;
-bellaFragment=bespXform.children[*]=besp1;
-bellaFragment=besp1.sizeX=5f;
-bellaFragment=besp1.sizeY=5f;
-bellaFragment=besp1.sizeZ=5f;
-bellaFragment=bespXform.material=besp0;
+bellaFragment=xform bespXform2;
+bellaFragment=bespXform.children[*]=bespNode1;
+bellaFragment=bespXform2.children[*]=bespNode3;
+bellaFragment=bespXform2.steps[0].xform=mat4(1 0 -0 0 0 1 0 0 0 0 1 0 0 -0.07 0.009 1);
+bellaFragment=bespNode1.sizeX=5f;
+bellaFragment=bespNode1.sizeY=5f;
+bellaFragment=bespNode1.sizeZ=5f;
+bellaFragment=bespXform.material=bespNode0;
 bellaFragment=__world__.children[*]=bespXform;
+bellaFragment=__world__.children[*]=bespXform2;
+bellaFragment=$selectXform.material=bespNode2;
+bellaFragment=bespNode0.scatteringColor=rgba(0.577 0.046 0.000 1);
+bellaFragment=bespNode0.absorbtionColor=rgba(0.830 0.814 0.947 1);
+bellaFragment=bespNode0.anisotropy=1f;
+bellaFragment=bespNode2.energy=100000f;
+bellaFragment=bespNode2.color=rgba(1 0.114435382187 0 1);
+bellaFragment=bespNode3.radius=0.015f;
+
+
 
 

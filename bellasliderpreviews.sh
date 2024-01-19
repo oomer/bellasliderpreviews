@@ -8,9 +8,9 @@ if [ -z ${BELLA_VERSION} ]; then
 fi
 
 BESP_MODE="generate_besp"
-bellaGroup="material"
+bellaGroup="environment"
 bellaMaterials=( "blend" "carPaint" "conductor" "dielectric" "emitterProjector" "emitter" "orenNayer" "quickMaterial" )
-bellaSpecial=( "box" "volumetricMaterial" )
+bellaSpecial=( "box" "sphere" "volumetricMaterial" "polygon")
 
 if test -d ${BELLA_VERSION}; then
 	echo -e "\nFound existing .besp and .bsa files"
@@ -108,15 +108,22 @@ if [ $BESP_MODE == "generate_besp" ]; then
         ####
         stepIndex=0
         unset bellaFragment
-        unset bellaNodeInsert
+        unset bespNode
 		stepFragmentIndex=0
 		stepSelectIndex=0
-		stepInsertIndex=0
+		bespNodeIndex=0
         while read each_line; do
-            if ! [[ -z ${each_line} ]]; then
+            if ! [[ -z ${each_line} ]] && ! [[ ${each_line:0:1} == "#" ]]; then
+				echo ${each_line}
                 less_trailing_whitespace="$(sed -e 's/[[:space:]]*$//' <<<${each_line})"
-                if ! [[ -z ${less_trailing_whitespace} ]]; then
-                    if [ ${less_trailing_whitespace%=*} == "bellaSliderStart" ] ; then
+                if ! [[ -z ${less_trailing_whitespace} ]] ; then
+					# parseFragments can contains strings that break bash 
+					# like brackets, requiring that fragment strings are caught first
+					# before being used in a bash parameter expansion
+                    if [ ${less_trailing_whitespace%Fragment=*} == "bella" ] ; then
+                        bellaFragment[${stepFragmentIndex}]=${less_trailing_whitespace#*bellaFragment=} 
+                        stepFragmentIndex=$((stepFragmentIndex+1))
+                    elif [ ${less_trailing_whitespace%=*} == "bellaSliderStart" ] ; then
                         bellaSliderStart=${less_trailing_whitespace#*=} 
                     elif [ ${less_trailing_whitespace%=*} == "bellaSliderEnd" ] ; then
                         bellaSliderEnd=${less_trailing_whitespace#*=} 
@@ -132,16 +139,13 @@ if [ $BESP_MODE == "generate_besp" ]; then
                         bellaUnits=${less_trailing_whitespace#*=} 
                     elif [ ${less_trailing_whitespace%=*} == "bellaScene" ] ; then
                         bellaScene=${less_trailing_whitespace#*=} 
-                    elif [ ${less_trailing_whitespace%=*} == "bellaAttribute" ] ; then
-                        bellaAttribute=${less_trailing_whitespace#*=} 
+                    elif [ ${less_trailing_whitespace%=*} == "bellaNodeAttribute" ] ; then
+                        bellaNodeAttribute=${less_trailing_whitespace#*=} 
                     elif [ ${less_trailing_whitespace%=*} == "bellaSliderNode" ] ; then
                         bellaSliderNode=${less_trailing_whitespace#*=} 
-                    elif [ ${less_trailing_whitespace%Fragment=*} == "bella" ] ; then
-                        bellaFragment[${stepFragmentIndex}]=${less_trailing_whitespace#*bellaFragment=} 
-                        stepFragmentIndex=$((stepFragmentIndex+1))
-                    elif [ ${less_trailing_whitespace%NodeInsert=*} == "bella" ] ; then
-                        bellaNodeInsert[${stepInsertIndex}]=${less_trailing_whitespace#*bellaNodeInsert=} 
-                        stepInsertIndex=$((stepInsertIndex+1))
+                    elif [ ${less_trailing_whitespace%Node*=*} == "besp" ] ; then
+                        bespNode[${bespNodeIndex}]=${less_trailing_whitespace#*bespNode*=} 
+                        bespNodeIndex=$((bespNodeIndex+1))
                     elif [ ${less_trailing_whitespace%=*} == "selectXform" ] ; then
                         selectXform=${less_trailing_whitespace#*=} 
                     elif [ ${less_trailing_whitespace%=*} == "selectMesh" ] ; then
@@ -154,14 +158,14 @@ if [ $BESP_MODE == "generate_besp" ]; then
         done <${each_template}
 
 		if [ -z $selectXform ]; then
-			echo "Select $scene xform"
+			echo "Select xform to assign to variable \$selectXform"
 			select_nodes=$("${bella_cli_path}" -ln:"xform" -i:${scene})
 			node_names_with_spaces="${select_nodes//,/ }"
 			select selectXform in $node_names_with_spaces
 			do
 				break
 			done
-			echo "Select $scene mesh"
+			echo "Select mesh to assign to variable \$selectMesh"
 			select_nodes=$("${bella_cli_path}" -ln:"mesh" -i:${scene})
 			node_names_with_spaces="${select_nodes//,/ }"
 			select selectMesh in $node_names_with_spaces
@@ -173,15 +177,15 @@ if [ $BESP_MODE == "generate_besp" ]; then
         echo "bellaSliderStart=${bellaSliderStart}" > ${render_besp_dir}/${scene}.${template_uuid}.besp
         echo "bellaSliderEnd=${bellaSliderEnd}" >> ${render_besp_dir}/${scene}.${template_uuid}.besp
         echo "bellaSliderFrames=${bellaSliderFrames}" >> ${render_besp_dir}/${scene}.${template_uuid}.besp
-		for ((i = 0 ; i < ${#bellaNodeInsert[@]} ; i++ )); do
-        	echo "bellaNodeInsert=${bellaNodeInsert[$i]}" >> ${render_besp_dir}/${scene}.${template_uuid}.besp
+		for ((i = 0 ; i < ${#bespNode[@]} ; i++ )); do
+        	echo "bespNode=${bespNode[$i]}" >> ${render_besp_dir}/${scene}.${template_uuid}.besp
 		done
         echo "bellaScene=${scene}" >> ${render_besp_dir}/${scene}.${template_uuid}.besp
         echo "bellaSliderType=${bellaSliderType}" >> ${render_besp_dir}/${scene}.${template_uuid}.besp
         echo "bellaSliderNode=${bellaSliderNode}" >> ${render_besp_dir}/${scene}.${template_uuid}.besp
         echo "bellaNodeType=${bellaNodeType}" >> ${render_besp_dir}/${scene}.${template_uuid}.besp
         echo "bellaNode=${bellaNode}" >> ${render_besp_dir}/${scene}.${template_uuid}.besp
-        echo "bellaAttribute=${bellaAttribute}" >> ${render_besp_dir}/${scene}.${template_uuid}.besp
+        echo "bellaNodeAttribute=${bellaNodeAttribute}" >> ${render_besp_dir}/${scene}.${template_uuid}.besp
         echo "bellaUnits=${bellaUnits}" >> ${render_besp_dir}/${scene}.${template_uuid}.besp
         echo "selectMesh=${selectMesh}" >> ${render_besp_dir}/${scene}.${template_uuid}.besp
         echo "selectXform=${selectXform}" >> ${render_besp_dir}/${scene}.${template_uuid}.besp
@@ -221,8 +225,8 @@ if [ ${idle} == "1" ]; then
 
         stepFragmentIndex=0
         stepSelectIndex=0
-        stepInsertIndex=0
-        unset bellaNodeInsert
+        bespNodeIndex=0
+        unset bespNode
         unset bellaFragment
 		unset insert0
 		unset insert1
@@ -243,22 +247,22 @@ if [ ${idle} == "1" ]; then
                         #bellaSliderFrames="3"
                     elif [ ${less_trailing_whitespace%=*} == "bellaNodeType" ] ; then
                         bellaNodeType=${less_trailing_whitespace#*=} 
-                    elif [ ${less_trailing_whitespace%=*} == "bellaUnits" ] ; then
-                        bellaUnits=${less_trailing_whitespace#*=} 
                     elif [ ${less_trailing_whitespace%=*} == "bellaNode" ] ; then
                         bellaNode=${less_trailing_whitespace#*=} 
+                    elif [ ${less_trailing_whitespace%=*} == "bellaUnits" ] ; then
+                        bellaUnits=${less_trailing_whitespace#*=} 
                     elif [ ${less_trailing_whitespace%=*} == "bellaScene" ] ; then
                         bellaScene=${less_trailing_whitespace#*=} 
-                    elif [ ${less_trailing_whitespace%=*} == "bellaAttribute" ] ; then
-                        bellaAttribute=${less_trailing_whitespace#*=} 
+                    elif [ ${less_trailing_whitespace%=*} == "bellaNodeAttribute" ] ; then
+                        bellaNodeAttribute=${less_trailing_whitespace#*=} 
                     elif [ ${less_trailing_whitespace%=*} == "bellaSliderNode" ] ; then
                         bellaSliderNode=${less_trailing_whitespace#*=} 
                     elif [ ${less_trailing_whitespace%Fragment=*} == "bella" ] ; then
                         bellaFragment[${stepFragmentIndex}]=${less_trailing_whitespace#*bellaFragment=} 
                         stepFragmentIndex=$((stepFragmentIndex+1))
-                    elif [ ${less_trailing_whitespace%NodeInsert=*} == "bella" ] ; then
-                        bellaNodeInsert[${stepInsertIndex}]=${less_trailing_whitespace#*bellaNodeInsert=} 
-                        stepInsertIndex=$((stepInsertIndex+1))
+                    elif [ ${less_trailing_whitespace%Node*=*} == "besp" ] ; then
+                        bespNode[${bespNodeIndex}]=${less_trailing_whitespace#*bespNode*=} 
+                        bespNodeIndex=$((bespNodeIndex+1))
                     elif [ ${less_trailing_whitespace%=*} == "selectMesh" ] ; then
                         selectMesh=${less_trailing_whitespace#*=} 
                     elif [ ${less_trailing_whitespace%=*} == "selectXform" ] ; then
@@ -272,12 +276,13 @@ if [ ${idle} == "1" ]; then
     	echo "bellaScene=\"${bella_scene}\";" > ${render_html_dir}/bella.js
     	echo "bellaNodeType=\"${bellaNodeType}\";" >> ${render_html_dir}/bella.js
     	echo "bellaNode=\"${bellaNode}\";" >> ${render_html_dir}/bella.js
-    	echo "bellaAttribute=\"${bellaAttribute}\";" >> ${render_html_dir}/bella.js
+    	echo "bellaNodeAttribute=\"${bellaNodeAttribute}\";" >> ${render_html_dir}/bella.js
 		echo "bellaSteps=[];" >> ${render_html_dir}/bella.js
+		echo "bellaQueue=[];" >> ${render_html_dir}/bella.js
 
 		# html
 		cp ./templates_html/template.html ${render_html_dir}/index.html
-		echo "<A href=./${render_uuid}/index.html>${bellaNodeType} &nbsp; > &nbsp; ${bella_scene} &nbsp; > &nbsp; ${bellaNode} &nbsp; > &nbsp; ${bellaAttribute}</a><br>" >> ${render_besp_dir}/directory.html
+		echo "<A href=./${render_uuid}/index.html>${bellaNodeType} &nbsp; > &nbsp; ${bella_scene} &nbsp; > &nbsp; ${bellaNode} &nbsp; > &nbsp; ${bellaNodeAttribute}</a><br>" >> ${render_besp_dir}/directory.html
 
 		unset insert0
 		for ((i = 1 ; i <= ${bellaSliderFrames} ; i++ )); do 
@@ -291,32 +296,53 @@ if [ ${idle} == "1" ]; then
 			echo "bellaSteps[$((i))]=\"$(printf %.3f ${animated}) ${bellaUnits}\" ;" >> ${render_html_dir}/bella.js
 
 			if [ $i == 1 ]; then
-				for ((c = 0 ; c < ${#bellaNodeInsert[@]} ; c++ )); do
-					if [[ ${bellaMaterials[*]} =~ ${bellaNodeInsert[$c]} ]]; then
-						insert0="${insert0}${bellaNodeInsert[$c]} besp${c};${selectXform}.material=besp${c}; "
-					elif [ ${bellaNodeInsert[$c]} == "scattering" ]; then
-						insert0="${insert0}${bellaNodeInsert[$c]} besp${c};${selectXform}.scattering=besp${c}; "
-					elif [ ${bellaNodeInsert[$c]} == "carPaint" ]; then
-						insert0="${insert0}${bellaNodeInsert[$c]} besp${c};${selectXform}.material=besp${c}; "
-					elif [ ${bellaNodeInsert[$c]} == "thinLens" ]; then
+				for ((c = 0 ; c < ${#bespNode[@]} ; c++ )); do
+					if [[ ${bellaMaterials[*]} =~ ${bespNode[$c]} ]]; then
+						insert0="${insert0}${bespNode[$c]} bespNode${c}; "
+					elif [ ${bespNode[$c]} == "scattering" ]; then
+						insert0="${insert0}${bespNode[$c]} bespNode${c};${selectXform}.scattering=bespNode${c}; "
+					elif [ ${bespNode[$c]} == "thinLens" ]; then
 						insert0="${insert0}nncamera.pinhole=false; "
-					elif [[ ${bellaSpecial[*]} =~ ${bellaNodeInsert[$c]} ]]; then
-						insert0="${insert0}${bellaNodeInsert[$c]} besp${c}; "
-					elif [ ${bellaNodeInsert[$c]} == "grass" ]; then
-						insert0="${insert0}${bellaNodeInsert[$c]} besp${c};${selectMesh}.grass=besp${c}; "
+					elif [[ ${bellaSpecial[*]} =~ ${bespNode[$c]} ]]; then
+						insert0="${insert0}${bespNode[$c]} bespNode${c}; "
+					elif [ ${bespNode[$c]} == "grass" ]; then
+						insert0="${insert0}${bespNode[$c]} bespNode${c};${selectMesh}.grass=bespNode${c}; "
 					fi
 				done
+
+				# Substitute .besp variables with scene node uuids selected by user
 				for ((c = 0 ; c < ${#bellaFragment[@]} ; c++ )); do
-					insert1="${insert1}${bellaFragment[$c]} "
+					theFragment=${bellaFragment[$c]}
+                	backQuoteFragment="$(sed -e 's/\"/\\\"/g' <<<${bellaFragment[$c]})"
+					#echo $backQuoteFragment
+                    if [[ "${theFragment%selectXform*}" == "\$" ]] ; then
+						substituteUserVar=${bellaFragment[$c]/\$selectXform/$selectXform}
+						backQuoteFragment="$(sed -e 's/\"/\\\"/g' <<<${substituteUserVar})"
+						#insert1="${insert1}${bellaFragment[$c]/\$selectXform/$selectXform} "
+						insert1="${insert1}${substituteUserVar} "
+						echo "bellaQueue[$((c))]=\"${backQuoteFragment}\";" >> ${render_html_dir}/bella.js
+                    elif [[ "${theFragment%selectMesh*}" == "\$" ]] ; then
+						substituteUserVar=${bellaFragment[$c]/\$selectMesh/$selectMesh}
+						backQuoteFragment="$(sed -e 's/\"/\\\"/g' <<<${substituteUserVar})"
+						insert1="${insert1}${substituteUserVar} "
+						echo "bellaQueue[$((c))]=\"${backQuoteFragment}\";" >> ${render_html_dir}/bella.js
+					else
+						insert1="${insert1}${bellaFragment[$c]} "
+						backQuoteFragment="$(sed -e 's/\"/\\\"/g' <<<${bellaFragment[$c]})"
+						echo "bellaQueue[$((c))]=\"${backQuoteFragment}\";" >> ${render_html_dir}/bella.js
+					fi
 				done
-				echo "parseFragment0=\"${insert0}\";" >> ${render_html_dir}/bella.js
-				echo "parseFragment1=\"${insert1}\";" >> ${render_html_dir}/bella.js
+				#echo "parseFragment0=\"${insert0}\";" >> ${render_html_dir}/bella.js
+				#echo "parseFragment1=\"${insert1}\";" >> ${render_html_dir}/bella.js
+				echo "parseFragment0=\"0\";" >> ${render_html_dir}/bella.js
+				echo "parseFragment1=\"0\";" >> ${render_html_dir}/bella.js
 
 			fi
 
 			if ! [ $BESP_MODE == "generate_besp" ]; then
-				echo ${bella_cli_path} -i:\""${bella_scene}"\" -on:\""bella${padded}"\" -pf:\""${BELLA_PARSE_FRAGMENT}"\" -pf:\""${insert0}"\" -pf:\""${insert1}"\" -pf:\""${bellaSliderNode}.${bellaAttribute}=${animated}f;"\" -pf:\""nnsettings.threads=0;nnbeautyPass.outputExt=\".jpg\";"\"  -od:\""${render_html_dir}/"\" 
-				${bella_cli_path} -i:"${bella_scene}" -on:"bella${padded}" -pf:"${BELLA_PARSE_FRAGMENT}" -pf:"${insert0}" -pf:"${insert1}" -pf:"${bellaSliderNode}.${bellaAttribute}=${animated}f;" -pf:"nnsettings.threads=0;nnbeautyPass.outputExt=\".jpg\";"  -od:"${render_html_dir}/" 
+                backQuoteInsert="$(sed -e 's/\"/\\\"/g' <<<${insert1})"
+				echo ${bella_cli_path} -i:\""${bella_scene}"\" -on:\""bella${padded}"\" -pf:\""${BELLA_PARSE_FRAGMENT}"\" -pf:\""${insert0}"\" -pf:\""${backQuoteInsert}"\" -pf:\""${bellaSliderNode}.${bellaNodeAttribute}=${animated}f;"\" -pf:\""nnsettings.threads=0;nnbeautyPass.outputExt=\\\".jpg\\\";"\"  -od:\""${render_html_dir}/"\" 
+				${bella_cli_path} -i:"${bella_scene}" -on:"bella${padded}" -pf:"${BELLA_PARSE_FRAGMENT}" -pf:"${insert0}" -pf:"${insert1}" -pf:"${bellaSliderNode}.${bellaNodeAttribute}=${animated}f;" -pf:"nnsettings.threads=0;nnbeautyPass.outputExt=\".jpg\";"  -od:"${render_html_dir}/" 
 			fi
 		done	
 	done
