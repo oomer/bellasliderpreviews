@@ -9,7 +9,7 @@ bellaNodeAttribute=length
 bellaUnits=cm
 bespSelect=mesh
 bespSelect=xform
-bespNode=grass
+bespNode0=grass
 bespNode=dielectric
 bellaFragment=bespNode0.baseRadius=0.05f;
 bellaFragment=bespNode0.density=500000u;

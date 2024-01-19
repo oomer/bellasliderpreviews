@@ -3,8 +3,9 @@ bellaSliderStart=0.0
 bellaSliderEnd=1.0
 bellaSliderFrames=30
 bellaSliderNode=bespNode0
-bespNode=carPaint
+bespNode0=carPaint
 bellaNodeType=material
 bellaNode=carPaint
 bellaNodeAttribute=orangePeel.strength
 bellaFragment=bespNode0.orangePeel.size=0.25f;
+bellaFragment=$selectXform.material=bespNode0;

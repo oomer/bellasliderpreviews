@@ -9,7 +9,7 @@ bellaNodeAttribute=anisotropy
 bespSelect=xform
 bespSelect=material
 bespNode=dielectric
-bespNode=scattering
+bespNode0=scattering
 bellaFragment=bespNode1.albedo=0.4f;
 bellaFragment=bespNode1.color=rgba(1 0.584078490734 0.0703600943 1); 
 bellaFragment=bespNode0.ior=1.31f; 

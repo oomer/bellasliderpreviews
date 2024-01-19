@@ -8,9 +8,85 @@ if [ -z ${BELLA_VERSION} ]; then
 fi
 
 BESP_MODE="generate_besp"
-bellaGroup="environment"
+bellaOrbitDegrees=0
+bellaGroup="material"
 bellaMaterials=( "blend" "carPaint" "conductor" "dielectric" "emitterProjector" "emitter" "orenNayer" "quickMaterial" )
 bellaSpecial=( "box" "sphere" "volumetricMaterial" "polygon")
+
+# Note all bash vars are global, except local
+#============================================
+function func_multiply () {
+    func_multiply_return=$(awk -v X=$1 -v Y=$2 \
+        'BEGIN{ 
+                result = X*Y; 
+                printf "%f", result}'
+    )
+}
+
+function func_add () {
+    func_add_return=$(awk -v X=$1 -v Y=$2 \
+        'BEGIN{ 
+                result = X+Y; 
+                printf "%f", result}'
+    )
+}
+
+# expect frames starting at 1
+function func_lerp () {
+	func_lerp_result=$(awk -v "startVal=$1" -v "endVal=$2" -v "currentFrame=$3" -v "totalFrames=$4" \
+    'BEGIN {print ((endVal-(startVal))*((currentFrame-1)/(totalFrames-1)))+(startVal)}')
+}
+
+function anim_angle_to_mat4() {
+    func_anim_angle_to_mat4_return=$(awk -v angle=$1 -v currentStep=$2  -v totalSteps=$3 \
+        'BEGIN{ 
+                PI=3.14159265
+                elemA = cos(((angle/totalSteps)*(currentStep-1))/180*PI); 
+                elemB = sin(((angle/totalSteps)*(currentStep-1))/180*PI); 
+                elemC = sin(((angle/totalSteps)*(currentStep-1))/180*PI)*-1; 
+                elemD = cos(((angle/totalSteps)*(currentStep-1))/180*PI); 
+                printf "%f %f 0 0 %f %f 0 0 0 0 1 0 0 0 0 1", elemA, elemB, elemC, elemD }'
+        ) 
+}
+
+# convert angle to mat4
+#anim_angle_to_mat4 $angle 15 30
+#rotationMat4=(${func_anim_angle_to_mat4_return})
+#echo ${#rotMat4[@]}
+
+# bash 3.2 on MacOS does not support associative arrays
+
+# using map array since we lack associative arrays
+func_dot_product_mat4 () {
+    # convert angle to mat4
+    anim_angle_to_mat4 $1 $2 $3
+    local rotationMat4=(${func_anim_angle_to_mat4_return})
+    resultingMat4=(0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0)
+    local linearIndexMap=(0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15)
+    local skipIndexMap=(0 4 8 12 1 5 9 13 2 6 10 14 3 7 11 15)
+
+    local firstOffset=0
+    local secondOffset=0
+    local fourCount=0
+    # walk every row, every column, do dot product math
+    for (( ixx = 0 ; ixx < 16 ; ixx++ )); do
+        for ((colCount = 0 ; colCount < 4 ; colCount++ )); do
+            #echo "${ixx} ${linearIndexMap[$((colCount+firstOffset))]} ${skipIndexMap[$((colCount+secondOffset))]}"
+            camIndex=${linearIndexMap[$((colCount+firstOffset))]} 
+            rotationIndex=${skipIndexMap[$((colCount+secondOffset))]}
+            func_multiply ${camMat4[ $camIndex ]} ${rotationMat4[ $rotationIndex ]}
+            func_add ${resultingMat4[$ixx]} $func_multiply_return
+            resultingMat4[$ixx]=$func_add_return
+        done
+        secondOffset=$((secondOffset+4))
+        fourCount=$((fourCount+1))
+        if [ $fourCount == 4 ]; then
+            fourCount=0
+            firstOffset=$((firstOffset+4))
+            secondOffset=0
+        fi
+    done
+}
 
 if test -d ${BELLA_VERSION}; then
 	echo -e "\nFound existing .besp and .bsa files"
@@ -131,6 +207,8 @@ if [ $BESP_MODE == "generate_besp" ]; then
                         bellaSliderType=${less_trailing_whitespace#*=} 
                     elif [ ${less_trailing_whitespace%=*} == "bellaSliderFrames" ] ; then
                         bellaSliderFrames=${less_trailing_whitespace#*=} 
+                    elif [ ${less_trailing_whitespace%=*} == "bellaOrbitDegrees" ] ; then
+                        bellaOrbitDegrees=${less_trailing_whitespace#*=} 
                     elif [ ${less_trailing_whitespace%=*} == "bellaNodeType" ] ; then
                         bellaNodeType=${less_trailing_whitespace#*=} 
                     elif [ ${less_trailing_whitespace%=*} == "bellaNode" ] ; then
@@ -165,6 +243,20 @@ if [ $BESP_MODE == "generate_besp" ]; then
 			do
 				break
 			done
+			echo "Select camera xform to assign to variable \$selectCameraXform"
+			select_nodes=$("${bella_cli_path}" -ln:"xform" -i:${scene})
+			node_names_with_spaces="${select_nodes//,/ }"
+			select selectCameraXform in $node_names_with_spaces
+			do
+				break
+			done
+			bellaCameraXform=$("${bella_cli_path}" -qa:"$selectCameraXform.steps[0].xform" -i:${scene})
+			echo $bellaCameraXform
+			temp4=$(sed -e 's/mat4(//' <<<${bellaCameraXform})	
+			camMat4=($(sed -e 's/)//' <<<${temp4}))
+			echo -e "\n======\n$cam444"
+
+
 			echo "Select mesh to assign to variable \$selectMesh"
 			select_nodes=$("${bella_cli_path}" -ln:"mesh" -i:${scene})
 			node_names_with_spaces="${select_nodes//,/ }"
@@ -177,6 +269,7 @@ if [ $BESP_MODE == "generate_besp" ]; then
         echo "bellaSliderStart=${bellaSliderStart}" > ${render_besp_dir}/${scene}.${template_uuid}.besp
         echo "bellaSliderEnd=${bellaSliderEnd}" >> ${render_besp_dir}/${scene}.${template_uuid}.besp
         echo "bellaSliderFrames=${bellaSliderFrames}" >> ${render_besp_dir}/${scene}.${template_uuid}.besp
+        echo "bellaOrbitDegrees=${bellaOrbitDegrees}" >> ${render_besp_dir}/${scene}.${template_uuid}.besp
 		for ((i = 0 ; i < ${#bespNode[@]} ; i++ )); do
         	echo "bespNode=${bespNode[$i]}" >> ${render_besp_dir}/${scene}.${template_uuid}.besp
 		done
@@ -189,6 +282,7 @@ if [ $BESP_MODE == "generate_besp" ]; then
         echo "bellaUnits=${bellaUnits}" >> ${render_besp_dir}/${scene}.${template_uuid}.besp
         echo "selectMesh=${selectMesh}" >> ${render_besp_dir}/${scene}.${template_uuid}.besp
         echo "selectXform=${selectXform}" >> ${render_besp_dir}/${scene}.${template_uuid}.besp
+        echo "camMat4=${camMat4[@]}" >> ${render_besp_dir}/${scene}.${template_uuid}.besp
 
         #rm -f  ${render_besp_dir}/${scene}.${template_uuid}.bsa
         for ((i = 0 ; i < ${#bellaFragment[@]} ; i++ )); do
@@ -244,7 +338,8 @@ if [ ${idle} == "1" ]; then
                         bellaSliderType=${less_trailing_whitespace#*=} 
                     elif [ ${less_trailing_whitespace%=*} == "bellaSliderFrames" ] ; then
                         bellaSliderFrames=${less_trailing_whitespace#*=} 
-                        #bellaSliderFrames="3"
+                    elif [ ${less_trailing_whitespace%=*} == "bellaOrbitDegrees" ] ; then
+                        bellaOrbitDegrees=${less_trailing_whitespace#*=} 
                     elif [ ${less_trailing_whitespace%=*} == "bellaNodeType" ] ; then
                         bellaNodeType=${less_trailing_whitespace#*=} 
                     elif [ ${less_trailing_whitespace%=*} == "bellaNode" ] ; then
@@ -267,6 +362,8 @@ if [ ${idle} == "1" ]; then
                         selectMesh=${less_trailing_whitespace#*=} 
                     elif [ ${less_trailing_whitespace%=*} == "selectXform" ] ; then
                         selectXform=${less_trailing_whitespace#*=} 
+                    elif [ ${less_trailing_whitespace%=*} == "camMat4" ] ; then
+                        camMat4=(${less_trailing_whitespace#*=})
                     fi
                 fi
             fi
@@ -286,6 +383,16 @@ if [ ${idle} == "1" ]; then
 
 		unset insert0
 		for ((i = 1 ; i <= ${bellaSliderFrames} ; i++ )); do 
+
+			if ! [ $BESP_MODE == "generate_besp" ] && ! [ $bellaOrbitDegrees == "0"]; then
+				#orbit
+				func_lerp 0 $bellaOrbitDegrees $i ${bellaSliderFrames}
+				#echo -e "\n=======\n$func_lerp_result"
+				#echo "func_dot_product_mat4 ${func_lerp_result} ${i} ${bellaSliderFrames}"
+				func_dot_product_mat4 ${func_lerp_result} ${i} ${bellaSliderFrames}
+				insert2="__camera__.steps[0].xform=mat4( ${resultingMat4[@]} );"
+				#echo "mat4( ${resultingMat4[@]} );"
+			fi
 			padded=$(printf "%04d" $((i)))
 			animated=$(awk "BEGIN {print (($bellaSliderEnd-($bellaSliderStart))*(($i-1)/($bellaSliderFrames-1)))+($bellaSliderStart)}")
 			if [ ${animated:0:1} == "." ]; then
@@ -341,8 +448,8 @@ if [ ${idle} == "1" ]; then
 
 			if ! [ $BESP_MODE == "generate_besp" ]; then
                 backQuoteInsert="$(sed -e 's/\"/\\\"/g' <<<${insert1})"
-				echo ${bella_cli_path} -i:\""${bella_scene}"\" -on:\""bella${padded}"\" -pf:\""${BELLA_PARSE_FRAGMENT}"\" -pf:\""${insert0}"\" -pf:\""${backQuoteInsert}"\" -pf:\""${bellaSliderNode}.${bellaNodeAttribute}=${animated}f;"\" -pf:\""nnsettings.threads=0;nnbeautyPass.outputExt=\\\".jpg\\\";"\"  -od:\""${render_html_dir}/"\" 
-				${bella_cli_path} -i:"${bella_scene}" -on:"bella${padded}" -pf:"${BELLA_PARSE_FRAGMENT}" -pf:"${insert0}" -pf:"${insert1}" -pf:"${bellaSliderNode}.${bellaNodeAttribute}=${animated}f;" -pf:"nnsettings.threads=0;nnbeautyPass.outputExt=\".jpg\";"  -od:"${render_html_dir}/" 
+				echo ${bella_cli_path} -i:\""${bella_scene}"\" -on:\""bella${padded}"\" -pf:\""${BELLA_PARSE_FRAGMENT}"\" -pf:\""${insert0}"\" -pf:\""${insert2}"\" -pf:\""${backQuoteInsert}"\" -pf:\""${bellaSliderNode}.${bellaNodeAttribute}=${animated}f;"\" -pf:\""nnsettings.threads=0;nnbeautyPass.outputExt=\\\".jpg\\\";"\"  -od:\""${render_html_dir}/"\" 
+				${bella_cli_path} -i:"${bella_scene}" -on:"bella${padded}" -pf:"${BELLA_PARSE_FRAGMENT}" -pf:"${insert0}" -pf:"${insert1}" -pf:"${insert2}" -pf:"${bellaSliderNode}.${bellaNodeAttribute}=${animated}f;" -pf:"nnsettings.threads=0;nnbeautyPass.outputExt=\".jpg\";"  -od:"${render_html_dir}/" 
 			fi
 		done	
 	done
@@ -358,3 +465,4 @@ else
 		microsoftedge.exe "${PWD}/${BELLA_VERSION}/${bellaGroup}/directory.html"
 	fi
 fi
+

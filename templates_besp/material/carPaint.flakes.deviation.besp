@@ -4,9 +4,9 @@ bellaSliderEnd=0.25
 bellaSliderFrames=30
 bellaSliderNode=bespNode0
 bellaNodeType=material
-bellaNode=carPaint
+bellaNode0=carPaint
 bellaNodeAttribute=flakes.deviation
 bespNode=carPaint
 bellaFragment=bespNode0.flakes.size=10f;
 bellaFragment=bespNode0.flakes.strength=1.0f;
-
+bellaFragment=$selectXform.material=bespNode0;
