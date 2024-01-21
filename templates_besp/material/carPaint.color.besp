@@ -1,17 +1,16 @@
-bellaSliderType=real
+bellaSliderType=rgba
 bellaSliderNode=bespCarPaint
-bellaSliderStart=0.0
-bellaSliderEnd=1.0
+bellaSliderStart=rgba(0.168269395828 0.011612244882 0.003676506924 1)
+bellaSliderEnd=rgba(0.0202885624 0.201556295156 0.052860654891 1)
 bellaSliderFrames=30
 bellaOrbitDegrees=5
 
 bellaNodeType=material
 bellaNode=carPaint
-bellaNodeAttribute=flakes.density
+bellaNodeAttribute=color
 
 bespCarPaint=carPaint
 
 bellaFragment=bespCarPaint.flakes.size=10.0f;
 bellaFragment=bespCarPaint.flakes.strength=1.0f;
 bellaFragment=$selectXform.material=bespCarPaint;
-

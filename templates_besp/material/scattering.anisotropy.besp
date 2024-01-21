@@ -1,0 +1,21 @@
+bellaSliderType=real
+bellaSliderNode=bespScattering
+bellaSliderStart=-1.0
+bellaSliderEnd=1.0
+bellaSliderFrames=30
+bellaOrbitDegrees=5
+
+bellaNodeType=material
+bellaNode=scattering
+bellaNodeAttribute=anisotropy
+
+bespDielectric=dielectric
+bespScattering=scattering
+
+bellaFragment=bespScattering.albedo=0.4f;
+bellaFragment=bespScattering.color=rgba(1 0.584078490734 0.0703600943 1); 
+bellaFragment=bespDielectric.ior=1.31f; 
+bellaFragment=bespDielectric.transmittance=rgba(1 0.9046613574 0.51491779089 1); 
+bellaFragment=bespDielectric.depth=0.5f; 
+bellaFragment=$selectXform.material=bespDielectric;
+bellaFragment=bespDielectric.scattering=bespScattering;

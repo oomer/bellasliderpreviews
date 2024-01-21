@@ -1,0 +1,14 @@
+bellaSliderType=real
+bellaSliderNode=bespSubsurface
+bellaSliderStart=0.1
+bellaSliderEnd=1
+bellaSliderFrames=30
+bellaOrbitDegrees=5
+
+bellaNodeType=material
+bellaNode=subsurface
+bellaNodeAttribute=scale
+
+bespSubsurface=subsurface
+
+bellaFragment=$selectXform.material=bespSubsurface;

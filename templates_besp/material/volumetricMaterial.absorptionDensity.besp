@@ -1,0 +1,67 @@
+# Animation setting
+bellaSliderType=real
+bellaSliderStart=0
+bellaSliderEnd=100
+bellaSliderFrames=30
+# Animation is applied to this node
+bellaSliderNode=bespVolumetricMaterial
+
+# Bella node definitions
+bellaNodeType=material
+bellaNode=volumetricMaterial
+bellaNodeAttribute=absorptionDensity
+
+bespVolumetricMaterial=volumetricMaterial
+bespBoxXform=xform
+bespBox=box
+
+bespSphereXform=xform
+bespSphere=sphere
+
+bespEmitter=emitter
+bespLightXform=xform
+bespLight=polygon
+
+# bellaFragment is a queue
+# These run sequentially, FIFO rules
+# ===
+
+bellaFragment=__world__.children[*]=bespBoxXform;
+bellaFragment=__world__.children[*]=bespSphereXform;
+bellaFragment=__world__.children[*]=bespLightXform;
+
+bellaFragment=bespBoxXform.children[*]=bespBox;
+bellaFragment=bespBox.sizeX=0.5f;
+bellaFragment=bespBox.sizeY=0.5f;
+bellaFragment=bespBox.sizeZ=0.5f;
+bellaFragment=bespBoxXform.material=bespVolumetricMaterial;
+#bellaFragment=bespVolumetricMaterial.anisotropy=0.15f;
+bellaFragment=bespVolumetricMaterial.scatteringDensity=50f;
+#bellaFragment=bespVolumetricMaterial.absorptionDensity=50f;
+bellaFragment=bespVolumetricMaterial.scatteringColor=rgba(1 1 1 1);
+bellaFragment=bespVolumetricMaterial.absorptionColor=rgba(1 1 1 1);
+
+bellaFragment=bespSphereXform.steps[0].xform=mat4(1 0 -0 0 0 1 0 0 0 0 1 0 0 -0.08 0 1);
+bellaFragment=bespSphereXform.children[*]=bespSphere;
+bellaFragment=bespSphere.radius=0.008f;
+
+bellaFragment=bespLightXform.material=bespEmitter;
+bellaFragment=bespLightXform.steps[0].xform=mat4(1 0 -0 0 0 0 1 0 0 -1 0 0 0 0.035 0 1);
+bellaFragment=bespLightXform.children[*]=bespLight;
+bellaFragment=bespEmitter.energy=5000f;
+bellaFragment=bespEmitter.color=rgba(1 1 1 1);
+bellaFragment=bespLight.sides=6u;
+bellaFragment=bespLight.radius=0.01f;
+
+# De-energize image dome
+bellaFragment=nnenvironment.multiplier=0.1f;
+
+# Hide shaderball sphere, SPECIFIC to shader.bsz
+bellaFragment=__sphere__.visibility="hidden";
+
+# Move camera back, SPECIFIC to shaderball.bsz
+#bellaFragment=nncamera.steps[0].xform=mat4(-0.90757089814 0.419898874551 0 0 -0.186001165371 -0.402023570296 -0.896538128251 0 0.376455351045 0.813671914273 -0.442966572771 0 -0.162290415268 -0.345854073816 0.178495858971 1);
+#bellaFragment=xform.steps[0].xform=mat4(0.988388045954 -0.067309161539 0.136229759557 0 0.029756801193 0.964918525253 0.260857762787 0 -0.149008735981 -0.25377493256 0.955716841018 0 0.110877492913 0.1888340848 -0.281149494481 1);
+
+bellaFragment=nnbeautyPass.bouncesVolumetric=1;
+

@@ -1,0 +1,15 @@
+bellaSliderType=rgba
+bellaSliderNode=bespSubsurface
+bellaSliderStart=rgba(1 0 0 1)
+bellaSliderEnd=rgba(0 1 0 1)
+bellaSliderFrames=30
+bellaOrbitDegrees=5
+
+bellaNodeType=material
+bellaNode=subsurface
+bellaNodeAttribute=radius
+
+bespSubsurface=subsurface
+
+#bellaFragment=bespSubsurface.albedo=0.4f;
+bellaFragment=$selectXform.material=bespSubsurface;

@@ -1,0 +1,32 @@
+bellaSliderType=real
+bellaSliderNode=bespGrass
+bellaSliderStart=0
+bellaSliderEnd=1
+bellaSliderFrames=30
+bellaOrbitDegrees=5
+
+bellaNodeType=geometry
+bellaNode=grass
+bellaNodeAttribute=bend
+
+# Default grass settings
+bespGrass=grass
+bespTexForm=texform
+bespChecker=checker
+
+bellaFragment=bespTexForm.repeat=vec2(2 2);
+
+bellaFragment=bespGrass.length=2f;
+bellaFragment=bespGrass.baseRadius=0.05f;
+bellaFragment=bespGrass.density=500000u;
+bellaFragment=bespGrass.type="round";
+bellaFragment=bespGrass.mapping="area";
+
+bellaFragment=$selectMesh.grass=bespGrass;
+bellaFragment=$selectMaterial.color|=bespChecker.outColor;
+
+bellaFragment=bespChecker.color1=rgba(1 0.396755307913 0.107023112476 1);
+bellaFragment=bespChecker.color2=rgba(0.068478167057 0.238397583365 0.371237695217 1);
+bellaFragment=bespChecker.uvCoord|=bespTexForm.outUV;
+bellaFragment=bespChecker.xform=mat4(2 0 -0 0 0 2 0 0 0 0 2 0 0 0 0 1);
+
